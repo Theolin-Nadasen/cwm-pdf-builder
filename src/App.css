@@ -1,0 +1,300 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  background: #1a1a2e;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #16162a;
+  border-bottom: 1px solid #2a2a4a;
+  min-height: 60px;
+}
+
+.topbar h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 280px;
+  background: #16162a;
+  border-right: 1px solid #2a2a4a;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar-section {
+  padding: 15px;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.toolbar-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b8b9e;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tool-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  background: #2a2a4a;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.tool-button:hover {
+  background: #3a3a5a;
+  border-color: #4a4a6a;
+}
+
+.tool-button svg {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 6px;
+}
+
+.canvas-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0f0f1e;
+  overflow: auto;
+}
+
+.canvas-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  overflow: auto;
+}
+
+.canvas-container {
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.page-navigator {
+  padding: 12px 20px;
+  background: #16162a;
+  border-top: 1px solid #2a2a4a;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.page-info {
+  font-size: 14px;
+  color: #8b8b9e;
+}
+
+.page-thumbs {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.page-thumb {
+  min-width: 60px;
+  height: 84px;
+  background: #fff;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.page-thumb.active {
+  border-color: #6c68fb;
+}
+
+.page-thumb:hover {
+  border-color: #5c58eb;
+}
+
+.page-thumb-number {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.properties-panel {
+  width: 300px;
+  background: #16162a;
+  border-left: 1px solid #2a2a4a;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.properties-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  padding: 15px;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.properties-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #8b8b9e;
+  font-size: 14px;
+}
+
+.property-group {
+  padding: 15px;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.property-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8b8b9e;
+  margin-bottom: 8px;
+}
+
+.property-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: #2a2a4a;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.property-input:focus {
+  outline: none;
+  border-color: #6c68fb;
+}
+
+.property-row {
+  display: flex;
+  gap: 10px;
+}
+
+.color-picker {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.primary-button {
+  padding: 8px 16px;
+  background: #6c68fb;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.primary-button:hover {
+  background: #5c58eb;
+}
+
+.secondary-button {
+  padding: 8px 16px;
+  background: #2a2a4a;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #3a3a5a;
+  border-color: #4a4a6a;
+}
+
+.secondary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-button {
+  padding: 10px 20px;
+  background: #6c68fb;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.export-button:hover {
+  background: #5c58eb;
+}
+
+.export-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.undo-redo {
+  display: flex;
+  gap: 5px;
+}
+
+.undo-redo button {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
