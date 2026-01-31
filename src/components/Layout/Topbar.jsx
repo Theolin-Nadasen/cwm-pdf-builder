@@ -3,7 +3,7 @@ import { useFabric } from '../../context/FabricContext'
 import { useDocument } from '../../context/DocumentContext'
 import { generatePDFFromPages } from '../../utils/pdfGenerator'
 
-function Topbar() {
+function Topbar({ onShowHelp }) {
   const { canvas, undo, redo } = useFabric()
   const { pages, canvasDataRef, currentPage } = useDocument()
 
@@ -11,8 +11,14 @@ function Topbar() {
     try {
       // First save current page data
       if (canvas && currentPage) {
-        const currentCanvasData = canvas.toJSON()
-        canvasDataRef.current[currentPage.id] = currentCanvasData
+        const currentCanvasData = canvas.toJSON(['linkUrl'])
+        // Include page size and orientation in the saved data
+        canvasDataRef.current[currentPage.id] = {
+          ...currentCanvasData,
+          pageSize: currentPage.pageSize,
+          orientation: currentPage.orientation,
+          dimensions: currentPage.dimensions
+        }
       }
 
       // Collect all pages data
@@ -23,11 +29,9 @@ function Topbar() {
         return
       }
 
-      // Export all pages
+      // Export all pages - PDF generator will read page sizes from the data
       await generatePDFFromPages(allPagesData, {
-        filename: 'document.pdf',
-        pageSize: 'a4',
-        orientation: 'portrait'
+        filename: 'document.pdf'
       })
     } catch (error) {
       console.error('Error generating PDF:', error)
@@ -73,6 +77,17 @@ function Topbar() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
               <path d="M21 7v6h-6" />
               <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13" />
+            </svg>
+          </button>
+          <button
+            className="hidden md:flex items-center justify-center px-2 md:px-4 py-2 bg-white/10 border border-white/25 rounded-lg text-white text-sm md:text-[13px] font-semibold hover:bg-white/20 border-white/40 transition-all duration-300"
+            onClick={onShowHelp}
+            title="Keyboard Shortcuts (?)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
           </button>
         </div>

@@ -4,7 +4,7 @@ import { useDocument } from '../../context/DocumentContext'
 import DesignCanvas from '../Canvas/DesignCanvas'
 import PageNavigator from '../Pages/PageNavigator'
 
-function CanvasArea() {
+function CanvasArea({ showHelp, setShowHelp }) {
   const { canvas } = useFabric()
   const { zoom, updateZoom } = useDocument()
   const [canvasElements, setCanvasElements] = useState([])
@@ -71,7 +71,7 @@ function CanvasArea() {
       
       {/* Canvas Container */}
       <div className="flex-1 flex justify-center items-start p-2 md:p-[30px] overflow-auto relative min-h-0 pt-32 md:pt-24">
-        <DesignCanvas zoom={zoom} />
+        <DesignCanvas zoom={zoom} showHelp={showHelp} setShowHelp={setShowHelp} />
       </div>
       
       <PageNavigator />

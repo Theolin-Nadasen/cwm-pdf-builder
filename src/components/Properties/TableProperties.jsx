@@ -7,6 +7,11 @@ function TableProperties() {
 
   if (!selectedObject) return null
 
+  const handleChange = (prop, value) => {
+    setLocalValues(prev => ({ ...prev, [prop]: value }))
+    updateTableProperty(prop, value)
+  }
+
   const handleBlur = (prop, value) => {
     setLocalValues(prev => ({ ...prev, [prop]: undefined }))
     updateTableProperty(prop, value)
@@ -100,12 +105,13 @@ function TableProperties() {
         <div>
           <label className="block text-[11px] font-medium text-white/60 uppercase tracking-wider mb-2">Stroke Width</label>
           <input
-            type="number"
-            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-[13px] focus:outline-none focus:border-[#6c68fb] transition-colors"
-            defaultValue={firstCell?.strokeWidth || 1}
-            onBlur={(e) => handleBlur('strokeWidth', parseInt(e.target.value))}
+            type="range"
+            className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer mt-3"
+            value={firstCell?.strokeWidth || 1}
+            onChange={(e) => handleChange('strokeWidth', parseInt(e.target.value))}
             min="0"
             max="10"
+            step="1"
           />
         </div>
         <div>

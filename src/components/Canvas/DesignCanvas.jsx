@@ -1,39 +1,60 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback, useState } from 'react'
 import { useFabric } from '../../context/FabricContext'
 import { useDocument } from '../../context/DocumentContext'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
+import HelpMenu from '../HelpMenu/HelpMenu'
+import ContextMenu from '../ContextMenu/ContextMenu'
 import { fabric } from 'fabric'
 
-function DesignCanvas({ zoom }) {
-  const { canvas, setCanvas, initCanvas, deleteSelected, undo, redo } = useFabric()
+function DesignCanvas({ zoom, showHelp, setShowHelp }) {
+  const { canvas, setCanvas, initCanvas, deleteSelected, undo, redo, duplicateSelected, bringToFront, sendToBack, selectedObject, setSelectedObject, setObjectLink, removeObjectLink, addObjectShadow, removeObjectShadow } = useFabric()
   const { currentPageIndex, currentPage, savePageData, getPageData } = useDocument()
   const canvasRef = useRef(null)
   const initializedRef = useRef(false)
   const snapLinesRef = useRef([])
   const previousPageIdRef = useRef(null)
+  const [contextMenu, setContextMenu] = useState({ isOpen: false, x: 0, y: 0 })
 
-  useEffect(() => {
-    if (!initializedRef.current && canvasRef.current) {
-      const canvasInstance = initCanvas(canvasRef.current, {
-        width: 595.28,
-        height: 841.89,
-        backgroundColor: '#ffffff',
-        selectionKey: 'ctrlKey'
-      })
-      initializedRef.current = true
-    }
-
-    return () => {
-      if (canvas && !canvas.isDisposed) {
-        canvas.dispose()
-      }
-    }
-  }, [])
+  // Get dimensions from current page
+  const dimensions = currentPage?.dimensions || { width: 595.28, height: 841.89 }
 
   useKeyboardShortcuts({
     onDelete: deleteSelected,
     onUndo: undo,
-    onRedo: redo
+    onRedo: redo,
+    onDuplicate: duplicateSelected,
+    onBringToFront: bringToFront,
+    onSendToBack: sendToBack,
+    onShowHelp: () => setShowHelp(true),
+    onShowContextMenu: () => {
+      if (selectedObject && canvas) {
+        // Calculate position based on selected object
+        const objLeft = selectedObject.left || 0
+        const objTop = selectedObject.top || 0
+        const objWidth = (selectedObject.width || 0) * (selectedObject.scaleX || 1)
+        const objHeight = (selectedObject.height || 0) * (selectedObject.scaleY || 1)
+        
+        // Convert canvas coordinates to screen coordinates
+        const canvasRect = canvasRef.current?.getBoundingClientRect()
+        if (canvasRect) {
+          const screenX = canvasRect.left + (objLeft + objWidth / 2) * zoom
+          const screenY = canvasRect.top + (objTop + objHeight / 2) * zoom
+          
+          setContextMenu({
+            isOpen: true,
+            x: screenX,
+            y: screenY
+          })
+        }
+      }
+    },
+    onDeselect: () => {
+      if (canvas) {
+        canvas.discardActiveObject()
+        canvas.renderAll()
+        setSelectedObject(null)
+      }
+    }
   })
 
   const SNAP_TOLERANCE = 8
@@ -76,10 +97,9 @@ function DesignCanvas({ zoom }) {
     const objTop = obj.top
     const objBottom = obj.top + obj.height * obj.scaleY
     
-    // Use base canvas dimensions (unzoomed) for page center calculations
-    // Object positions are stored in unzoomed coordinate space
-    const BASE_WIDTH = 595.28
-    const BASE_HEIGHT = 841.89
+    // Use dynamic canvas dimensions for page center calculations
+    const BASE_WIDTH = dimensions.width
+    const BASE_HEIGHT = dimensions.height
     const canvasCenterX = BASE_WIDTH / 2
     const canvasCenterY = BASE_HEIGHT / 2
     
@@ -191,34 +211,35 @@ function DesignCanvas({ zoom }) {
     })
     
     return { snapped: true, props }
-  }, [canvas, getEffectiveTolerance, drawSnapLine])
+  }, [canvas, getEffectiveTolerance, drawSnapLine, dimensions])
 
+  // Initialize canvas once when component mounts
   useEffect(() => {
-    if (!initializedRef.current && canvasRef.current) {
-      const canvasInstance = initCanvas(canvasRef.current, {
-        width: 595.28,
-        height: 841.89,
-        backgroundColor: '#ffffff',
-        selectionKey: 'ctrlKey'
-      })
+    if (!initializedRef.current && canvasRef.current && currentPage && dimensions) {
+      const canvasInstance = initCanvas(canvasRef.current, dimensions)
       initializedRef.current = true
     }
+  }, [currentPage, dimensions, initCanvas])
 
+  // Cleanup canvas only when component unmounts
+  useEffect(() => {
     return () => {
       if (canvas && !canvas.isDisposed) {
         canvas.dispose()
+        initializedRef.current = false
       }
     }
   }, [])
 
+  // Update canvas dimensions when zoom changes
   useEffect(() => {
-    if (canvas) {
+    if (canvas && dimensions) {
       canvas.setZoom(zoom)
-      canvas.setWidth(595.28 * zoom)
-      canvas.setHeight(841.89 * zoom)
+      canvas.setWidth(dimensions.width * zoom)
+      canvas.setHeight(dimensions.height * zoom)
       canvas.renderAll()
     }
-  }, [zoom, canvas])
+  }, [zoom, canvas, dimensions])
 
   // Save current page data before switching and load new page data
   useEffect(() => {
@@ -230,9 +251,14 @@ function DesignCanvas({ zoom }) {
     if (previousPageIdRef.current !== currentPageId) {
       // Save data from previous page (if there was one)
       if (previousPageIdRef.current !== null) {
-        const canvasData = canvas.toJSON()
+        const canvasData = canvas.toJSON(['linkUrl'])
         savePageData(previousPageIdRef.current, canvasData)
       }
+
+      // Update canvas dimensions to match the new page
+      const newDimensions = currentPage.dimensions || { width: 595.28, height: 841.89 }
+      canvas.setWidth(newDimensions.width * zoom)
+      canvas.setHeight(newDimensions.height * zoom)
 
       // Load data for current page
       const pageData = getPageData(currentPageId)
@@ -247,7 +273,7 @@ function DesignCanvas({ zoom }) {
 
       previousPageIdRef.current = currentPageId
     }
-  }, [currentPage, canvas, savePageData, getPageData])
+  }, [currentPage, canvas, savePageData, getPageData, zoom])
 
   useEffect(() => {
     if (!canvas) return
@@ -277,10 +303,31 @@ function DesignCanvas({ zoom }) {
     }
   }, [canvas, clearSnapLines, findSnaps])
 
+  const handleCloseContextMenu = () => {
+    setContextMenu({ isOpen: false, x: 0, y: 0 })
+  }
+
   return (
-    <div className="canvas-container">
-      <canvas ref={canvasRef} />
-    </div>
+    <>
+      <div className="canvas-container">
+        <canvas ref={canvasRef} />
+      </div>
+      <HelpMenu isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      <ContextMenu
+        isOpen={contextMenu.isOpen}
+        position={{ x: contextMenu.x, y: contextMenu.y }}
+        onClose={handleCloseContextMenu}
+        selectedObject={selectedObject}
+        onSetLink={setObjectLink}
+        onRemoveLink={removeObjectLink}
+        onAddShadow={addObjectShadow}
+        onRemoveShadow={removeObjectShadow}
+        onDuplicate={duplicateSelected}
+        onDelete={deleteSelected}
+        onBringToFront={bringToFront}
+        onSendToBack={sendToBack}
+      />
+    </>
   )
 }
 

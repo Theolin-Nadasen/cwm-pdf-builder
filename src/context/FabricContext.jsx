@@ -12,14 +12,13 @@ export const FabricProvider = ({ children }) => {
   const historyIndexRef = useRef(-1)
   const isUndoingRef = useRef(false)
 
-  const initCanvas = useCallback((canvasEl, options = {}) => {
+  const initCanvas = useCallback((canvasEl, dimensions = { width: 595.28, height: 841.89 }) => {
     const canvasInstance = new fabric.Canvas(canvasEl, {
-      width: 595.28,
-      height: 841.89,
+      width: dimensions.width,
+      height: dimensions.height,
       backgroundColor: '#ffffff',
       selection: true,
-      preserveObjectStacking: true,
-      ...options
+      preserveObjectStacking: true
     })
 
     canvasInstance.on('selection:created', (e) => {
@@ -75,7 +74,7 @@ export const FabricProvider = ({ children }) => {
   }, [])
 
   const saveState = useCallback((canvasInstance) => {
-    const json = canvasInstance.toJSON()
+    const json = canvasInstance.toJSON(['linkUrl'])
     historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1)
     historyRef.current.push(json)
     historyIndexRef.current = historyRef.current.length - 1
@@ -132,18 +131,52 @@ export const FabricProvider = ({ children }) => {
   }, [canvas])
 
   const duplicateSelected = useCallback(() => {
-    if (canvas && selectedObject) {
-      selectedObject.clone((cloned) => {
+    if (!canvas) return
+    
+    const activeObjects = canvas.getActiveObjects()
+    if (activeObjects.length === 0) return
+    
+    if (activeObjects.length === 1) {
+      // Single object duplication
+      const obj = activeObjects[0]
+      obj.clone((cloned) => {
         cloned.set({
-          left: selectedObject.left + 20,
-          top: selectedObject.top + 20
+          left: obj.left + 20,
+          top: obj.top + 20,
+          linkUrl: obj.linkUrl
         })
         canvas.add(cloned)
         canvas.setActiveObject(cloned)
         canvas.renderAll()
       })
+    } else {
+      // Multiple objects duplication
+      const clonedObjects = []
+      let cloneCount = 0
+      
+      activeObjects.forEach((obj) => {
+        obj.clone((cloned) => {
+          cloned.set({
+            left: obj.left + 20,
+            top: obj.top + 20,
+            linkUrl: obj.linkUrl
+          })
+          canvas.add(cloned)
+          clonedObjects.push(cloned)
+          cloneCount++
+          
+          // When all objects are cloned, create selection
+          if (cloneCount === activeObjects.length) {
+            const selection = new fabric.ActiveSelection(clonedObjects, {
+              canvas: canvas
+            })
+            canvas.setActiveObject(selection)
+            canvas.renderAll()
+          }
+        })
+      })
     }
-  }, [canvas, selectedObject])
+  }, [canvas])
 
   const bringToFront = useCallback(() => {
     if (canvas && selectedObject) {
@@ -177,6 +210,46 @@ export const FabricProvider = ({ children }) => {
     }
   }, [canvas, selectedObject])
 
+  const setObjectLink = useCallback((url) => {
+    if (canvas && selectedObject) {
+      selectedObject.set('linkUrl', url)
+      selectedObject.setCoords()
+      canvas.renderAll()
+    }
+  }, [canvas, selectedObject])
+
+  const removeObjectLink = useCallback(() => {
+    if (canvas && selectedObject) {
+      selectedObject.set('linkUrl', null)
+      selectedObject.setCoords()
+      canvas.renderAll()
+    }
+  }, [canvas, selectedObject])
+
+  const addObjectShadow = useCallback(() => {
+    if (canvas && selectedObject) {
+      selectedObject.set({
+        shadow: {
+          color: 'rgba(0,0,0,0.3)',
+          blur: 10,
+          offsetX: 5,
+          offsetY: 5,
+          affectStroke: false
+        }
+      })
+      selectedObject.setCoords()
+      canvas.renderAll()
+    }
+  }, [canvas, selectedObject])
+
+  const removeObjectShadow = useCallback(() => {
+    if (canvas && selectedObject) {
+      selectedObject.set({ shadow: null })
+      selectedObject.setCoords()
+      canvas.renderAll()
+    }
+  }, [canvas, selectedObject])
+
   const value = {
     canvas,
     setCanvas,
@@ -190,6 +263,10 @@ export const FabricProvider = ({ children }) => {
     bringToFront,
     sendToBack,
     ungroupSelected,
+    setObjectLink,
+    removeObjectLink,
+    addObjectShadow,
+    removeObjectShadow,
     undo,
     redo,
     updateKey
