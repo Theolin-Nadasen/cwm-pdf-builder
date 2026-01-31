@@ -212,7 +212,12 @@ export const FabricProvider = ({ children }) => {
 
   const setObjectLink = useCallback((url) => {
     if (canvas && selectedObject) {
-      selectedObject.set('linkUrl', url)
+      let normalizedUrl = url.trim()
+      // Add https:// if no protocol is specified
+      if (normalizedUrl && !normalizedUrl.match(/^https?:\/\//i) && !normalizedUrl.match(/^mailto:/i)) {
+        normalizedUrl = 'https://' + normalizedUrl
+      }
+      selectedObject.set('linkUrl', normalizedUrl)
       selectedObject.setCoords()
       canvas.renderAll()
     }

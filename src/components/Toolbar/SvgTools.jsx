@@ -331,11 +331,11 @@ function SvgTools() {
       </div>
 
       {/* Icons Grid */}
-      <div className="grid grid-cols-4 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-8 md:grid-cols-3 gap-1">
         {currentCategory?.icons.map((icon) => (
           <button
             key={icon.name}
-            className="flex flex-col items-center justify-center p-2 md:p-3 bg-white/20 border border-white/30 rounded-lg hover:bg-white/30 hover:border-white/50 transition-all group"
+            className="flex flex-col items-center justify-center p-1 md:p-3 bg-white/20 border border-white/30 rounded hover:bg-white/30 hover:border-white/50 transition-all group"
             onClick={() => addSvgPath(icon.path, icon.name)}
             title={icon.name}
           >
@@ -344,7 +344,7 @@ function SvgTools() {
               fill="none" 
               stroke="currentColor" 
               strokeWidth="2" 
-              className="w-6 h-6 md:w-7 md:h-7 text-white group-hover:scale-110 transition-transform"
+              className="w-4 h-4 md:w-7 md:h-7 text-white group-hover:scale-110 transition-transform"
             >
               <path d={icon.path} />
             </svg>

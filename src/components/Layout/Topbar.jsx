@@ -21,10 +21,19 @@ function Topbar({ onShowHelp }) {
         }
       }
 
-      // Collect all pages data
-      const allPagesData = pages.map(page => canvasDataRef.current[page.id] || null)
+      // Collect all pages data with their metadata
+      const allPagesData = pages.map(page => {
+        const pageData = canvasDataRef.current[page.id] || {}
+        // Ensure all pages have their metadata included
+        return {
+          ...pageData,
+          pageSize: page.pageSize,
+          orientation: page.orientation,
+          dimensions: page.dimensions
+        }
+      })
 
-      if (allPagesData.length === 0) {
+      if (allPagesData.length === 0 || allPagesData.every(p => !p || !p.objects)) {
         alert('No pages to export')
         return
       }

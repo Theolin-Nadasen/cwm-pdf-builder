@@ -41,7 +41,7 @@ function Sidebar() {
       </div>
       
       {/* SVGs Section */}
-      <div className="px-3 py-2 md:p-5 flex-shrink-0 flex flex-col gap-1 md:gap-3 min-w-[200px] md:min-w-0 md:pb-8">
+      <div className="px-3 py-2 md:p-5 flex-shrink-0 flex flex-col gap-1 md:gap-3 min-w-[140px] md:min-w-0 md:pb-8">
         <h3 className="text-[10px] font-bold text-white/80 uppercase tracking-wider whitespace-nowrap md:tracking-wide">
           SVGs
         </h3>
